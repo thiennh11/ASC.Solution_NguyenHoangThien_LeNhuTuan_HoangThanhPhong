@@ -1,8 +1,7 @@
 using ASC.DataAccess;
-using ASC.Solution.Services;
+using ASC.Web.Services;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
-using ASC.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -41,6 +40,9 @@ builder.Services.AddTransient<ISmsSender, AuthMessageSender>();
 // Add IdentitySeed và UnitOfWork
 builder.Services.AddSingleton<IIdentitySeed, IdentitySeed>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 var app = builder.Build();
 
@@ -84,5 +86,10 @@ using (var scope = app.Services.CreateScope())
         scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>(),
         scope.ServiceProvider.GetRequiredService<IOptions<ApplicationSettings>>());
 }
-
+// Create Navigation Cache
+using (var scope = app.Services.CreateScope())
+{
+    var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
+    await navigationCacheOperations.CreateNavigationCacheAsync();
+}
 app.Run();

@@ -1,5 +1,4 @@
 ﻿using ASC.DataAccess;
-using ASC.Solution.Services;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
 using Microsoft.AspNetCore.Http;
@@ -50,6 +49,8 @@ namespace ASC.Web.Services
             // Add Cache, Session
             services.AddSession();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddDistributedMemoryCache();
+            services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
 
             // Add RazorPages, MVC
             services.AddRazorPages();
