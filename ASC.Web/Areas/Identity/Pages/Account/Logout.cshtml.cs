@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ASC.Web.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class LogoutModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
@@ -22,6 +23,7 @@ namespace ASC.Web.Areas.Identity.Pages.Account
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
+<<<<<<< HEAD
 
             if (returnUrl != null)
             {
@@ -29,6 +31,9 @@ namespace ASC.Web.Areas.Identity.Pages.Account
             }
 
             return RedirectToPage("/Index");
+=======
+            return LocalRedirect("/Home/Index");
+>>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
         }
     }
 }
