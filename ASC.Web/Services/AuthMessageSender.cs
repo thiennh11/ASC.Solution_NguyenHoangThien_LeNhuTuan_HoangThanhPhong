@@ -1,19 +1,42 @@
-﻿using ASC.Web.Services;
+﻿using ASC.Web.Configuration;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Options;
+using MimeKit;
 
-namespace ASC.Solution.Services
+namespace ASC.Web.Services
 {
     public class AuthMessageSender : IEmailSender, ISmsSender
     {
-        public Task SendEmailAsync(string email, string subject, string message)
+        private readonly ApplicationSettings _settings;
+
+        public AuthMessageSender(IOptions<ApplicationSettings> options)
         {
-            // Plug in your email service here to send an email.
-            return Task.FromResult(0);
+            _settings = options.Value;
+        }
+
+        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("ASC", _settings.SMTPAccount));
+            message.To.Add(MailboxAddress.Parse(email));
+            message.Subject = subject;
+
+            message.Body = new TextPart("html")
+            {
+                Text = htmlMessage
+            };
+
+            using var client = new SmtpClient();
+            await client.ConnectAsync(_settings.SMTPServer, _settings.SMTPPort, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(_settings.SMTPAccount, _settings.SMTPPassword);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
 
         public Task SendSmsAsync(string number, string message)
         {
-            // Plug in your SMS service here to send a text message.
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }
