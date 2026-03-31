@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+#nullable disable
+
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -11,29 +18,17 @@ namespace ASC.Web.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;
 
-        public LogoutModel(
-            SignInManager<IdentityUser> signInManager,
-            ILogger<LogoutModel> logger)
+        public LogoutModel(SignInManager<IdentityUser> signInManager, ILogger<LogoutModel> logger)
         {
             _signInManager = signInManager;
             _logger = logger;
         }
 
-        public async Task<IActionResult> OnPost(string? returnUrl = null)
+        public async Task<IActionResult> OnPost(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
-<<<<<<< HEAD
-
-            if (returnUrl != null)
-            {
-                return LocalRedirect(returnUrl);
-            }
-
-            return RedirectToPage("/Index");
-=======
             return LocalRedirect("/Home/Index");
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
         }
     }
 }

@@ -1,18 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Http
 @using ASC.Utilities
 @using ASC.Web.Data
-<<<<<<< HEAD
-
-@inject IHttpContextAccessor UserHttpContext
-@inject INavigationCacheOperations navigationCache
-
-@{
-    Layout = "_MasterLayout";
-    var currentUser = UserHttpContext.HttpContext?.User.GetCurrentUserDetails();
-    var navigationMenu = await navigationCache.GetNavigationCacheAsync();
-}
-
-=======
 @inject IHttpContextAccessor UserHttpContext
 @inject INavigationCacheOperations navigationCache
 
@@ -21,7 +9,6 @@
     var currentUser = UserHttpContext.HttpContext.User.GetCurrentUserDetails();
 }
 <!-- Header -->
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
 <header class="secureLayout">
     <nav class="top-nav blue-grey lighten-1">
         <div class="nav-wrapper row valign-wrapper">
@@ -29,36 +16,16 @@
                 <a href="#" data-target="nav-mobile" class="sidenav-trigger">
                     <i class="material-icons">menu</i>
                 </a>
-<<<<<<< HEAD
-                <h5>
-                    <a class="page-title">Automobile Service Center</a>
-                </h5>
-=======
                 <h5><a class="page-title">Automobile Service Center</a></h5>
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
             </div>
         </div>
     </nav>
 
+    <!-- Side NavBar -->
     <ul id="nav-mobile" class="sidenav sidenav-fixed">
         <li>
             <div class="user-view">
                 <div class="background blue-grey lighten-1"></div>
-<<<<<<< HEAD
-                <a href="#!user">
-                    <img class="circle" src="~/images/male.png" />
-                </a>
-                <a href="#!name">
-                    <span class="white-text name">@currentUser?.Name</span>
-                </a>
-                <a href="#!email">
-                    <span class="white-text email">@currentUser?.Email</span>
-                </a>
-            </div>
-        </li>
-
-        @await Component.InvokeAsync("ASC.Web.Navigation.LeftNavigation", navigationMenu)
-=======
                 <a href="#!user"><img class="circle" src="~/images/male.png"></a>
                 <a href="#!name"><span class="white-text name">@currentUser.Name</span></a>
                 <a href="#!email"><span class="white-text email">@currentUser.Email</span></a>
@@ -67,52 +34,16 @@
 
         @await Component.InvokeAsync("ASC.Web.Navigation.LeftNavigation",
         await navigationCache.GetNavigationCacheAsync())
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
     </ul>
 </header>
 
 <form class="hide" method="post" id="logout_form" asp-area="Identity" asp-page="/Account/Logout">
-<<<<<<< HEAD
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="returnUrl" value="@Url.Content("~/")" />
-    <button type="submit">Logout</button>
-=======
     <input type="submit" value="Logout" />
     @Html.AntiForgeryToken()
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
 </form>
 
 <form class="hide" method="post" id="resetPassword_form" asp-area="Identity" asp-page="/Account/InitiateResetPassword">
     @Html.AntiForgeryToken()
-<<<<<<< HEAD
-    <button type="submit">Reset Password</button>
-</form>
-
-<main style="padding-left:300px;">
-    @RenderBody()
-</main>
-
-@section Scripts {
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('.sidenav').sidenav();
-            $('.collapsible').collapsible();
-
-            $(document).on('click', '#ancrLogout', function (e) {
-                e.preventDefault();
-                $('#logout_form').submit();
-            });
-
-            $(document).on('click', '#ancrResetPassword', function (e) {
-                e.preventDefault();
-                $('#resetPassword_form').submit();
-            });
-        });
-    </script>
-
-    @RenderSection("Scripts", required: false)
-}
-=======
 </form>
 
 <!-- Render Body -->
@@ -167,4 +98,3 @@
 </footer>
 
 @RenderSection("Scripts", required: false)
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90

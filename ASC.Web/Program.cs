@@ -3,15 +3,11 @@ using ASC.Web.Services;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-<<<<<<< HEAD
-builder.Services
-    .AddConfig(builder.Configuration)
-    .AddMyDependencyGroup();
-=======
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -47,7 +43,6 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
->>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
 
 var app = builder.Build();
 
@@ -67,14 +62,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseSession();
+
 app.MapControllerRoute(
     name: "areaRoute",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}");
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
@@ -87,16 +82,9 @@ using (var scope = app.Services.CreateScope())
 {
     var storageSeed = scope.ServiceProvider.GetRequiredService<IIdentitySeed>();
     await storageSeed.Seed(
-        scope.ServiceProvider.GetService<UserManager<IdentityUser>>(),
-        scope.ServiceProvider.GetService<RoleManager<IdentityRole>>(),
-        scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>());
-}
-
-// Create navigation cache
-using (var scope = app.Services.CreateScope())
-{
-    var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
-    await navigationCacheOperations.CreateNavigationCacheAsync();
+        scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>(),
+        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>(),
+        scope.ServiceProvider.GetRequiredService<IOptions<ApplicationSettings>>());
 }
 // Create Navigation Cache
 using (var scope = app.Services.CreateScope())
