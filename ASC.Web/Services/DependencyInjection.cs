@@ -1,4 +1,8 @@
 ﻿using ASC.DataAccess;
+<<<<<<< HEAD
+using ASC.Web.Services;
+=======
+>>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
 using ASC.Web.Configuration;
 using ASC.Web.Data;
 using Microsoft.AspNetCore.Http;
@@ -49,8 +53,14 @@ namespace ASC.Web.Services
             // Add Cache, Session
             services.AddSession();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+<<<<<<< HEAD
+            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
+            services.AddSingleton<INavigationCacheOperations, NavigationCacheOperations>();
+=======
             services.AddDistributedMemoryCache();
             services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
+>>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
 
             // Add RazorPages, MVC
             services.AddRazorPages();

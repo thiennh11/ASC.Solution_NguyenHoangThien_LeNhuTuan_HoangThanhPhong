@@ -4,12 +4,21 @@
 @inject IHttpContextAccessor UserHttpContext
 
 @{
+<<<<<<< HEAD
+    var currentUser = UserHttpContext.HttpContext?.User.GetCurrentUserDetails();
+}
+
+@foreach (var menuItem in Model.MenuItems.OrderBy(p => p.Sequence).ToList())
+{
+    if (currentUser != null && currentUser.Roles.Intersect(menuItem.UserRoles).Any())
+=======
     var currentUser = UserHttpContext.HttpContext.User.GetCurrentUserDetails();
 }
 
 @foreach (var menuItem in Model.MenuItems)
 {
     if (currentUser.Roles.Intersect(menuItem.UserRoles).Any())
+>>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
     {
         if (menuItem.IsNested)
         {
@@ -26,6 +35,13 @@
                                 {
                                     if (currentUser.Roles.Intersect(subMenuItem.UserRoles).Any())
                                     {
+<<<<<<< HEAD
+                                        <li>
+                                            <a href="@subMenuItem.Link" id="@string.Format("ancr{0}", subMenuItem.DisplayName.Replace(" ", ""))">
+                                                @subMenuItem.DisplayName
+                                                <i class="material-icons">@subMenuItem.MaterialIcon</i>
+                                            </a>
+=======
                                         var subMenuId = string.Format("ancr{0}", subMenuItem.DisplayName.Replace(" ", ""));
 
                                         <li>
@@ -43,6 +59,7 @@
                                                     <i class="material-icons">@subMenuItem.MaterialIcon</i>
                                                 </a>
                                             }
+>>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
                                         </li>
                                     }
                                 }
@@ -54,6 +71,13 @@
         }
         else
         {
+<<<<<<< HEAD
+            <li>
+                <a href="@menuItem.Link" id="@string.Format("ancr{0}", menuItem.DisplayName.Replace(" ", ""))">
+                    <i class="material-icons">@menuItem.MaterialIcon</i>
+                    @menuItem.DisplayName
+                </a>
+=======
             var menuId = string.Format("ancr{0}", menuItem.DisplayName.Replace(" ", ""));
 
             <li>
@@ -69,6 +93,7 @@
                         <i class="material-icons">@menuItem.MaterialIcon</i>@menuItem.DisplayName
                     </a>
                 }
+>>>>>>> 8da259071b53eaf611f1701a7493e18be3d08c90
             </li>
         }
     }
