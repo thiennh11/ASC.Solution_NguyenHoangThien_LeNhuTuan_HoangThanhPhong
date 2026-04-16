@@ -2,6 +2,7 @@
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using ASC.Web.Services;
 
 namespace ASC.Web.Services
 {

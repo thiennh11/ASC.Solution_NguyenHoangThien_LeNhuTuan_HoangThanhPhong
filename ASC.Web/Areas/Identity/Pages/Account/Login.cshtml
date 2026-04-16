@@ -1,37 +1,28 @@
 ﻿@page
 @model LoginModel
 @inject SignInManager<IdentityUser> SignInManager
-
 @{
     ViewData["Title"] = "Log in";
 }
-
 <div class="container">
     <div class="row">
         <div class="col s12 m5 offset-m2">
             <form asp-route-returnUrl='@ViewData["ReturnUrl"]' method="post">
                 <div asp-validation-summary="All" class="text-danger"></div>
-
                 <div class="row">
                     <div class="input-field col s12">
                         <input asp-for="Input.Email" type="email" class="validate">
-                        <label asp-for="Input.Email">
-                            Email
-                        </label>
+                        <label asp-for="Input.Email">Email</label>
                         <span class="helper-text" data-error="wrong" data-success="right" />
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="input-field col s12">
                         <input asp-for="Input.Password" type="password" class="validate">
-                        <label asp-for="Input.Password">
-                            Password
-                        </label>
+                        <label asp-for="Input.Password">Password</label>
                         <span class="helper-text" data-error="wrong" data-success="right" />
                     </div>
                 </div>
-
                 <div class="row padding-left-10px">
                     <p>
                         <label>
@@ -42,18 +33,48 @@
                         </label>
                     </p>
                 </div>
-
                 <div class="row center">
                     <button class="btn waves-effect waves-light" type="submit">
                         Submit
                         <i class="material-icons right">send</i>
                     </button>
                 </div>
-
                 <div class="row center">
                     <a href="/Identity/Account/ForgotPassword">Forgot your password?</a>
                 </div>
             </form>
         </div>
+
+        <div class="col s12 m4">
+            @{
+                var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            }
+            @if (loginProviders.Count != 0)
+            {
+                <h6>Login using External Providers.</h6>
+                <div class="divider"></div>
+                <form asp-area="Identity"
+                      asp-page="/Account/ExternalLogin"
+                      asp-route-returnUrl='@ViewData["ReturnUrl"]'
+                      method="post"
+                      class="form-horizontal">
+                    <div>
+                        <p>
+                            @foreach (var provider in loginProviders)
+                            {
+                                <button type="submit"
+                                        class="btn btndefault"
+                                        name="provider"
+                                        value="@provider.DisplayName"
+                                        title="Log in using your @provider.DisplayName account">
+                                    @provider.DisplayName
+                                </button>
+                            }
+                        </p>
+                    </div>
+                </form>
+            }
+        </div>
+
     </div>
 </div>
