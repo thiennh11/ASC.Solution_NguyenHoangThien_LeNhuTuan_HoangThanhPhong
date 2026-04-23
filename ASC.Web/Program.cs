@@ -1,7 +1,9 @@
+using ASC.Business.Interfaces;
 using ASC.DataAccess;
-using ASC.Web.Services;
+using ASC.Model.Models;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
+using ASC.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -15,12 +17,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-{
-    options.User.RequireUniqueEmail = true;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+//{
+//    options.User.RequireUniqueEmail = true;
+//})
+//.AddEntityFrameworkStores<ApplicationDbContext>()
+//.AddDefaultTokenProviders();
 
 builder.Services.AddScoped<DbContext, ApplicationDbContext>();
 
@@ -32,6 +34,8 @@ builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
+
+builder.Services.AddMyDependencyGroup();
 
 // Add application services
 builder.Services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -96,5 +100,33 @@ using (var scope = app.Services.CreateScope())
 {
     var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
     await navigationCacheOperations.CreateNavigationCacheAsync();
+}
+// Seed Master Data Keys
+using (var scope = app.Services.CreateScope())
+{
+    var masterData = scope.ServiceProvider.GetRequiredService<IMasterDataOperations>();
+    var existingKeys = await masterData.GetAllMasterKeysAsync();
+    if (!existingKeys.Any())
+    {
+        await masterData.InsertMasterKeyAsync(new MasterDataKey
+        {
+            PartitionKey = "Status",
+            RowKey = Guid.NewGuid().ToString(),
+            Name = "Status",
+            IsActive = true,
+            CreatedBy = "Admin",
+            UpdatedBy = "Admin"
+        });
+
+        await masterData.InsertMasterKeyAsync(new MasterDataKey
+        {
+            PartitionKey = "VehicleType",
+            RowKey = Guid.NewGuid().ToString(),
+            Name = "VehicleType",
+            IsActive = true,
+            CreatedBy = "Admin",
+            UpdatedBy = "Admin"
+        });
+    }
 }
 app.Run();

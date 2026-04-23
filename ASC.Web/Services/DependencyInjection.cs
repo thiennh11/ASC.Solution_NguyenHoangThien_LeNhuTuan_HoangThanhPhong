@@ -1,4 +1,6 @@
-﻿using ASC.DataAccess;
+﻿using ASC.Business;
+using ASC.Business.Interfaces;
+using ASC.DataAccess;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
 using Microsoft.AspNetCore.Http;
@@ -31,6 +33,14 @@ namespace ASC.Web.Services
         {
             // Add ApplicationDbContext
             services.AddScoped<DbContext, ApplicationDbContext>();
+
+            //Add MasterDataOperations
+            services.AddScoped<IMasterDataOperations, MasterDataOperations>();
+            services.AddAutoMapper(
+                typeof(ApplicationDbContext),
+                typeof(ASC.Web.Areas.Configuration.Models.MappingProfile)
+            );
+
 
             // Add IdentityUser
             services.AddIdentity<IdentityUser, IdentityRole>(options =>

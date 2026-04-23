@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity;
+﻿﻿@using Microsoft.AspNetCore.Identity;
 @using System.Security.Claims;
 @model ASC.Web.Areas.Accounts.Models.ServiceEngineerViewModel
 @inject UserManager<IdentityUser> userManager;
@@ -41,7 +41,7 @@
                                     @(Boolean.Parse(identity.SingleOrDefault(p => p.Type == "IsActive").Value))
                                 </td>
                                 <td>
-                                    <img src="@(Boolean.Parse(identity.SingleOrDefault(p => p.Type == "IsActive").Value) ? "/images/green_tick.png" : "/images/red_cross.png")" width="30" height="30" "  />
+                                    <img src="@(Boolean.Parse(identity.SingleOrDefault(p => p.Type == "IsActive").Value) ? "/images/green_tick.png" : "/images/red_cross.png")" width="30" height="30"    />
                                 </td>
                                 <td>
                                     <i class="small material-icons edit cursor-hand">
