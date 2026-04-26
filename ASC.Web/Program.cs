@@ -1,3 +1,4 @@
+using ASC.Business;
 using ASC.Business.Interfaces;
 using ASC.DataAccess;
 using ASC.Model.Models;
@@ -37,6 +38,8 @@ builder.Services.AddSession();
 
 builder.Services.AddMyDependencyGroup();
 
+builder.Services.AddScoped<IMasterDataOperations, MasterDataOperations>();
+
 // Add application services
 builder.Services.AddTransient<IEmailSender, AuthMessageSender>();
 builder.Services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -46,7 +49,7 @@ builder.Services.AddSingleton<IIdentitySeed, IdentitySeed>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication()
     .AddGoogle(options => {
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"];

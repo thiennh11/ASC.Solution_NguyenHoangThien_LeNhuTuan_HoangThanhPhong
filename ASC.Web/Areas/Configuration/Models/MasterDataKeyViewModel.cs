@@ -10,5 +10,8 @@ namespace ASC.Web.Areas.Configuration.Models
 
         [Required]
         public string Name { get; set; } = null!;
+
+        public string? CreatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
     }
 }

@@ -3,6 +3,51 @@
 @{
     Layout = "_SecureLayout";
 }
+<style>
+        .form-label-big {
+            font-size: 15px !important;
+            color: #777 !important;
+        }
+
+        .active-label-big {
+            font-size: 15px !important;
+            color: #777 !important;
+            display: block;
+            margin-bottom: 25px;
+        }
+
+        .active-area {
+            margin-top: 12px;
+        }
+
+        .active-switch {
+            margin-top: 5px;
+        }
+
+        .form-label-big {
+        font-size: 15px !important;
+        color: #777 !important;
+    }
+
+    .active-area {
+        margin-top: 12px;
+    }
+
+    .active-label-big {
+        font-size: 15px !important;
+        color: #777 !important;
+        display: block;
+        margin-bottom: 18px;
+    }
+
+    .switch-label {
+        cursor: pointer;
+    }
+
+    .active-area input[type="hidden"] {
+        display: none !important;
+    }
+</style>
 <div>
     <div class="row"></div>
 
@@ -78,38 +123,74 @@
                 <div class="divider"></div>
 
                 <div class="row">
-                    <form asp-controller="MasterData" asp-action="MasterKeys" method="post"
-                          class="col s12" id="formMasterKey">
+                    <form action="/Configuration/MasterData/MasterKeys"
+                          method="post"
+                          class="col s12"
+                          id="formMasterKey">
+
+                        @Html.AntiForgeryToken()
 
                         <div class="row">
-                            <input type="hidden" asp-for="IsEdit" />
-                            <input type="hidden" asp-for="MasterKeyInContext.RowKey" />
-                            <input type="hidden" asp-for="MasterKeyInContext.PartitionKey" />
+                            <input type="hidden"
+                                   id="IsEdit"
+                                   name="IsEdit"
+                                   value="False" />
+
+                            <input type="hidden"
+                                   id="MasterKeyInContext_RowKey"
+                                   name="MasterKeyInContext.RowKey" />
+
+                            <input type="hidden"
+                                   id="MasterKeyInContext_PartitionKey"
+                                   name="MasterKeyInContext.PartitionKey" />
 
                             <div class="input-field col s4">
-                                <input asp-for="MasterKeyInContext.RowKey"
+                                <input type="text"
                                        id="Input_MasterKey_RowKey"
-                                       disabled="disabled" />
-                                <label asp-for="MasterKeyInContext.RowKey"></label>
+                                       readonly="readonly" />
+
+                                <label for="Input_MasterKey_RowKey"
+                                       class="active form-label-big">
+                                    RowKey
+                                </label>
                             </div>
 
                             <div class="input-field col s4">
-                                <input asp-for="MasterKeyInContext.Name" class="validate" />
-                                <label asp-for="MasterKeyInContext.Name"></label>
-                                <span asp-validation-for="MasterKeyInContext.Name" class="red-text"></span>
+                                <input type="text"
+                                       id="MasterKeyInContext_Name"
+                                       name="MasterKeyInContext.Name"
+                                       class="validate" />
+
+                                <label for="MasterKeyInContext_Name"
+                                       class="active form-label-big">
+                                    Name
+                                </label>
+
+                                <span class="red-text"
+                                      data-valmsg-for="MasterKeyInContext.Name"
+                                      data-valmsg-replace="true">
+                                </span>
                             </div>
 
-                            <div class="col s4" style="margin-top: 20px;">
+                            <div class="col s4 active-area">
                                 <div class="switch">
-                                    <label>
-                                        Is Active
-                                        <input asp-for="MasterKeyInContext.IsActive" />
+                                    <label class="switch-label">
+                                        <span class="active-label-big">Is Active</span>
+
+                                        <input type="checkbox"
+                                               id="MasterKeyInContext_IsActive"
+                                               name="MasterKeyInContext.IsActive"
+                                               value="true" />
+
                                         <span class="lever"></span>
                                     </label>
+
+                                    <input type="hidden"
+                                           name="MasterKeyInContext.IsActive"
+                                           value="false" />
                                 </div>
                             </div>
                         </div>
-                        @* @Html.AntiForgeryToken() *@
                         <div class="row">
                             <div class="input-field col s12 right-align">
                                 <button class="btn waves-effect waves-light btnSubmit"
@@ -136,53 +217,65 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        $(document).ready(function () {
+                $(document).ready(function () {
+                    // Initialize DataTable
+                    var table = $('#tblMasterKeys').DataTable({
+                        'pageLength': 3,
+                        'lengthMenu': [[3, 5, 10, -1], [3, 5, 10, 'All']]
+                    });
 
-            // Initialize DataTable
-            var table = $('#tblMasterKeys').DataTable({
-                'pageLength': 3,
-                'lengthMenu': [[3, 5, 10, -1], [3, 5, 10, 'All']]
-            });
+                    $('#tblMasterKeys').css("width", "100%");
+                    $('select[name="tblMasterKeys_length"]').formSelect();
 
-            $('#tblMasterKeys').css("width", "100%");
-            $('select[name="tblMasterKeys_length"]').formSelect();
+                    // Hide PartitionKey and IsActive text columns
+                    table.column(1).visible(false);
+                    table.column(3).visible(false);
+                    $('.btnSubmit').html('CREATE <i class="material-icons right">send</i>');
+        $('#IsEdit').val('False');
+        M.updateTextFields();
+                    // Handle Reset
+                    $(document).on('click', '.reset', function () {
+            $('#formMasterKey')[0].reset();
 
-            // Hide PartitionKey and IsActive text columns
-            table.column(1).visible(false);
-            table.column(3).visible(false);
+            $('#IsEdit').val('False');
 
-            // Handle Reset
-            $(document).on('click', '.reset', function () {
-                $('#formMasterKey')[0].reset();
-                $('.btnSubmit').text('Create');
-                $('#IsEdit').val('False');
-                M.updateTextFields();
-            });
+            $('#MasterKeyInContext_RowKey').val('');
+            $('#Input_MasterKey_RowKey').val('');
+            $('#MasterKeyInContext_PartitionKey').val('');
+            $('#MasterKeyInContext_Name').val('').removeClass('valid');
 
-            // Handle Edit
-            $(document).on('click', '.edit', function () {
-                var user = $('#tblMasterKeys').DataTable().row($(this).parents('tr')).data();
+            $('#MasterKeyInContext_IsActive')
+                .prop('checked', false)
+                .trigger('change');
 
-                $('#IsEdit').val('True');
+            $('.btnSubmit').html('CREATE <i class="material-icons right">send</i>');
 
-                // Map Row Key
-                $('#MasterKeyInContext_RowKey').val(user[0]);
-                $('#Input_MasterKey_RowKey').val(user[0]);
-
-                // Map Partition Key
-                $('#MasterKeyInContext_PartitionKey').val(user[1]);
-
-                // Map Name
-                $('#MasterKeyInContext_Name').val(user[2]);
-                $('#MasterKeyInContext_Name').addClass('valid');
-
-                // Map IsActive
-                $('#MasterKeyInContext_IsActive').prop('checked', user[3] === 'True');
-
-                $('.btnSubmit').text('Save');
-                M.updateTextFields();
-            });
+            M.updateTextFields();
         });
+
+                    // Handle Edit
+                    $(document).on('click', '.edit', function () {
+            var user = $('#tblMasterKeys').DataTable().row($(this).parents('tr')).data();
+
+            $('#IsEdit').val('True');
+
+            $('#MasterKeyInContext_RowKey').val(user[0]);
+            $('#Input_MasterKey_RowKey').val(user[0]);
+
+            $('#MasterKeyInContext_PartitionKey').val(user[1]);
+
+            $('#MasterKeyInContext_Name').val(user[2]);
+            $('#MasterKeyInContext_Name').addClass('valid');
+
+            $('#MasterKeyInContext_IsActive')
+                .prop('checked', user[3] === 'True')
+                .trigger('change');
+
+            $('.btnSubmit').html('SAVE <i class="material-icons right">send</i>');
+
+            M.updateTextFields();
+        });
+                });
     </script>
 }
 ```
