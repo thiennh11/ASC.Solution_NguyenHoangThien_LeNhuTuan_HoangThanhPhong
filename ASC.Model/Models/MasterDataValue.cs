@@ -11,5 +11,7 @@ namespace ASC.Model
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
         public MasterDataKey? MasterDataKey { get; set; }
+        public string MasterDataKeyPartitionKey { get; set; }
+        public string MasterDataKeyRowKey { get; set; }
     }
 }

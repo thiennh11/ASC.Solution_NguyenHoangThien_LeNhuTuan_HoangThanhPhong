@@ -101,32 +101,5 @@ using (var scope = app.Services.CreateScope())
     var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
     await navigationCacheOperations.CreateNavigationCacheAsync();
 }
-// Seed Master Data Keys
-using (var scope = app.Services.CreateScope())
-{
-    var masterData = scope.ServiceProvider.GetRequiredService<IMasterDataOperations>();
-    var existingKeys = await masterData.GetAllMasterKeysAsync();
-    if (!existingKeys.Any())
-    {
-        await masterData.InsertMasterKeyAsync(new MasterDataKey
-        {
-            PartitionKey = "Status",
-            RowKey = Guid.NewGuid().ToString(),
-            Name = "Status",
-            IsActive = true,
-            CreatedBy = "Admin",
-            UpdatedBy = "Admin"
-        });
 
-        await masterData.InsertMasterKeyAsync(new MasterDataKey
-        {
-            PartitionKey = "VehicleType",
-            RowKey = Guid.NewGuid().ToString(),
-            Name = "VehicleType",
-            IsActive = true,
-            CreatedBy = "Admin",
-            UpdatedBy = "Admin"
-        });
-    }
-}
 app.Run();

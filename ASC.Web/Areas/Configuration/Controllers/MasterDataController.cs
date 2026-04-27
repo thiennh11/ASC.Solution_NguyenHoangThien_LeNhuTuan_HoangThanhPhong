@@ -34,31 +34,42 @@ namespace ASC.Web.Areas.Configuration.Controllers
             return View(new MasterKeysViewModel
             {
                 MasterKeys = masterKeysViewModel == null ? null : masterKeysViewModel.ToList(),
+                MasterKeyInContext = new MasterDataKeyViewModel(),
                 IsEdit = false
             });
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MasterKeys(MasterKeysViewModel masterKeys)
         {
             masterKeys.MasterKeys = HttpContext.Session.GetSession<List<MasterDataKeyViewModel>>("MasterKeys");
-            if (!ModelState.IsValid)
+
+            if (masterKeys.MasterKeyInContext == null)
+                masterKeys.MasterKeyInContext = new MasterDataKeyViewModel();
+
+            if (string.IsNullOrWhiteSpace(masterKeys.MasterKeyInContext.Name))
             {
+                ModelState.AddModelError("MasterKeyInContext.Name", "Vui lòng nhập Name.");
                 return View(masterKeys);
             }
 
             var masterKey = _mapper.Map<MasterDataKeyViewModel, MasterDataKey>(masterKeys.MasterKeyInContext);
+            var currentUser = HttpContext.User.GetCurrentUserDetails().Name;
+
             if (masterKeys.IsEdit)
             {
-                // Update Master Key
-                await _masterData.UpdateMasterKeyAsync(masterKeys.MasterKeyInContext.PartitionKey, masterKey);
+                masterKey.UpdatedBy = currentUser;
+                await _masterData.UpdateMasterKeyAsync(
+                    masterKeys.MasterKeyInContext.PartitionKey,
+                    masterKey
+                );
             }
             else
             {
-                // Insert Master Key
                 masterKey.RowKey = Guid.NewGuid().ToString();
                 masterKey.PartitionKey = masterKey.Name;
+                masterKey.CreatedBy = currentUser;
+                masterKey.UpdatedBy = currentUser;
                 await _masterData.InsertMasterKeyAsync(masterKey);
             }
 
@@ -66,10 +77,17 @@ namespace ASC.Web.Areas.Configuration.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MasterValues()
+        public async Task<IActionResult> MasterValues(string selectedKey = null)
         {
-            // Get All Master Keys and hold them in ViewBag for Select tag
-            ViewBag.MasterKeys = await _masterData.GetAllMasterKeysAsync();
+            var keys = await _masterData.GetAllMasterKeysAsync();
+
+            ViewBag.MasterKeys = keys
+                .GroupBy(x => x.PartitionKey)
+                .Select(g => g.First())
+                .ToList();
+
+            ViewBag.SelectedKey = selectedKey;
+
             return View(new MasterValuesViewModel
             {
                 MasterValues = new List<MasterDataValueViewModel>(),
@@ -94,73 +112,121 @@ namespace ASC.Web.Areas.Configuration.Controllers
             }
 
             var masterDataValue = _mapper.Map<MasterDataValueViewModel, MasterDataValue>(masterValue);
+
             if (isEdit)
             {
-                // Update Master Value
-                await _masterData.UpdateMasterValueAsync(masterDataValue.PartitionKey, masterDataValue.RowKey, masterDataValue);
+                await _masterData.UpdateMasterValueAsync(
+                    masterDataValue.PartitionKey,
+                    masterDataValue.RowKey,
+                    masterDataValue);
             }
             else
             {
-                // Insert Master Value
                 masterDataValue.RowKey = Guid.NewGuid().ToString();
                 masterDataValue.CreatedBy = HttpContext.User.GetCurrentUserDetails().Name;
+                masterDataValue.UpdatedBy = HttpContext.User.GetCurrentUserDetails().Name;
+
+                // Lấy MasterDataKey theo PartitionKey và gán navigation property
+                var masterKeys = await _masterData.GetMaserKeyByNameAsync(masterDataValue.PartitionKey);
+                var key = masterKeys.FirstOrDefault();
+                if (key != null)
+                {
+                    masterDataValue.MasterDataKey = key; // ← gán navigation property
+                }
+
                 await _masterData.InsertMasterValueAsync(masterDataValue);
             }
 
-            return Json(true);
+            return Json(new { Success = true });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadExcel()
         {
-            var files = Request.Form.Files;
-            // Validations
-            if (!files.Any())
+            try
             {
-                return Json(new { Error = true, Text = "Upload a file" });
-            }
+                var files = Request.Form.Files;
 
-            var excelFile = files.First();
-            if (excelFile.Length <= 0)
+                if (!files.Any())
+                    return Json(new { success = false, message = "No file" });
+
+                var excelFile = files.First();
+
+                var masterData = await ParseMasterDataExcel(excelFile);
+
+                var result = await _masterData.UploadBulkMasterData(masterData);
+
+                return Json(new
+                {
+                    Success = result,
+                    Key = masterData.FirstOrDefault()?.PartitionKey,
+                    Text = result ? "Upload success" : "Upload failed"
+                });
+            }
+            catch (Exception ex)
             {
-                return Json(new { Error = true, Text = "Upload a file" });
+                return Json(new { success = false, message = ex.Message });
             }
-
-            // Parse Excel Data
-            var masterData = await ParseMasterDataExcel(excelFile);
-            var result = await _masterData.UploadBulkMasterData(masterData);
-            return Json(new { Success = result });
         }
-
         private async Task<List<MasterDataValue>> ParseMasterDataExcel(IFormFile excelFile)
         {
+            ExcelPackage.License.SetNonCommercialPersonal("Admin");
+
             var masterValueList = new List<MasterDataValue>();
+
             using (var memoryStream = new MemoryStream())
             {
-                // Get MemoryStream from Excel file
                 await excelFile.CopyToAsync(memoryStream);
-                // Create a ExcelPackage object from MemoryStream
-                using (ExcelPackage package = new ExcelPackage(memoryStream))
+                memoryStream.Position = 0;
+
+                using (var package = new ExcelPackage(memoryStream))
                 {
-                    // Get the first Excel sheet from the Workbook
-                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                    // CHECK SHEET
+                    if (package.Workbook.Worksheets.Count == 0)
+                        return masterValueList;
+
+                    var worksheet = package.Workbook.Worksheets[0];
+
+                    // CHECK DIMENSION
+                    if (worksheet.Dimension == null)
+                        return masterValueList;
 
                     int rowCount = worksheet.Dimension.Rows;
-                    // Iterate all the rows and create the list of MasterDataValue
-                    // Ignore first row as it is header
+
                     for (int row = 2; row <= rowCount; row++)
                     {
-                        var masterDataValue = new MasterDataValue();
-                        masterDataValue.RowKey = Guid.NewGuid().ToString();
-                        masterDataValue.PartitionKey = worksheet.Cells[row, 1].Value.ToString();
-                        masterDataValue.Name = worksheet.Cells[row, 2].Value.ToString();
-                        masterDataValue.IsActive = Boolean.Parse(worksheet.Cells[row, 3].Value.ToString());
-                        masterValueList.Add(masterDataValue);
+                        try
+                        {
+                            var partitionKey = worksheet.Cells[row, 1].Value?.ToString()?.Trim();
+                            var name = worksheet.Cells[row, 2].Value?.ToString()?.Trim();
+                            var isActiveStr = worksheet.Cells[row, 3].Value?.ToString()?.Trim();
+
+                            // BỎ DÒNG RÁC
+                            if (string.IsNullOrWhiteSpace(partitionKey) || string.IsNullOrWhiteSpace(name))
+                                continue;
+
+                            bool isActive = false;
+                            bool.TryParse(isActiveStr, out isActive);
+
+                            masterValueList.Add(new MasterDataValue
+                            {
+                                RowKey = Guid.NewGuid().ToString(),
+                                PartitionKey = partitionKey,
+                                Name = name,
+                                IsActive = isActive,
+                                CreatedBy = "Admin",
+                                UpdatedBy = "Admin"
+                            });
+                        }
+                        catch
+                        {
+                            continue;
+                        }
                     }
                 }
             }
+
             return masterValueList;
         }
     }
