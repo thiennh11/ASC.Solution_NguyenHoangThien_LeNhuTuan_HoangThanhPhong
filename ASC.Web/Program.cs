@@ -34,7 +34,7 @@ builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
-
+builder.Services.AddConfig(builder.Configuration);
 builder.Services.AddMyDependencyGroup();
 
 // Add application services
@@ -44,7 +44,7 @@ builder.Services.AddTransient<ISmsSender, AuthMessageSender>();
 // Add IdentitySeed và UnitOfWork
 builder.Services.AddSingleton<IIdentitySeed, IdentitySeed>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddDistributedMemoryCache();
+//builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddAuthentication()
@@ -100,6 +100,12 @@ using (var scope = app.Services.CreateScope())
 {
     var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
     await navigationCacheOperations.CreateNavigationCacheAsync();
+}
+//CreateMasterDataCache
+using (var scope = app.Services.CreateScope())
+{
+    var masterDataCacheOperations = scope.ServiceProvider.GetRequiredService<IMasterDataCacheOperations>();
+    await masterDataCacheOperations.CreateMasterDataCacheAsync();
 }
 
 app.Run();

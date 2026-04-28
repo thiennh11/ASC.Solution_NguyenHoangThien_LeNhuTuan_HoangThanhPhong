@@ -1,0 +1,104 @@
+﻿@model IEnumerable<ASC.Model.Models.ServiceRequest>
+@using ASC.Model.BaseTypes
+@{
+    var isAudit = ViewBag.IsAudit;
+}
+
+<div class="row padding-top-20px">
+    <div class="col s12">
+        <div class="z-depth-3">
+
+            <!-- Header -->
+            <div class="section white-text padding-left-10px blue-grey lighten-1">
+                <h5>@ViewBag.SectionName</h5>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Table -->
+            <div class="col s12 padding-bottom-15px">
+                <table class="highlight centered tblServiceRequests" id="@ViewBag.Id">
+                    <thead>
+                        <tr>
+                            <th>RowKey</th>
+                            <th>PartitionKey</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Requested Date</th>
+                            <th>Service Engineer</th>
+                            @if (isAudit)
+                            {
+                                <th>Requested Services</th>
+                            }
+                            <th>View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var serviceRequest in Model)
+                        {
+                            <tr>
+                                <td>@serviceRequest.RowKey</td>
+                                <td>@serviceRequest.PartitionKey</td>
+                                <td>
+                                    @(!serviceRequest.PartitionKey.Contains('-') ?
+                                                                    serviceRequest.PartitionKey :
+                                                                    serviceRequest.PartitionKey.Split('-')[0])
+                            </td>
+
+                                <td>
+                                @switch ((Status)Enum.Parse(typeof(Status), serviceRequest.Status))
+                                    {
+                                        case Status.New:
+                                        case Status.Initiated:
+                                        case Status.InProgress:
+                                        case Status.Completed:
+                                            <div class="white-text teal lighten-1 center-align">
+                                                @serviceRequest.Status
+                                            </div>
+                                            break;
+
+                                        case Status.RequestForInformation:
+                                        case Status.Pending:
+                                        case Status.Denied:
+                                            <div class="white-text red lighten-1 center-align">
+                                                @serviceRequest.Status
+                                            </div>
+                                            break;
+
+                                        case Status.PendingCustomerApproval:
+                                            <div class="white-text orange lighten-1 center-align">
+                                                @serviceRequest.Status
+                                            </div>
+                                            break;
+                                    }
+                                </td>
+
+                                <td>
+                                    @(serviceRequest.RequestedDate?.ToString("dd/MM/yyyy"))
+                                </td>
+
+                                <td>@serviceRequest.ServiceEngineer</td>
+
+                                @if (isAudit)
+                                {
+                                    var trimText = string.IsNullOrWhiteSpace(serviceRequest.RequestedServices)
+                                    ? ""
+                                    : serviceRequest.RequestedServices.Length > 50
+                                    ? serviceRequest.RequestedServices.Substring(0, 50) + "..."
+                                    : serviceRequest.RequestedServices;
+
+                                    <td title="@serviceRequest.RequestedServices">@trimText</td>
+                                }
+
+                                <td>
+                                    <i class="small material-icons view cursor-hand">pageview</i>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>

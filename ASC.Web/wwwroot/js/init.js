@@ -4,7 +4,7 @@
         $('.parallax').parallax();
         $('.collapsible').collapsible();
 
-         //✅ Thêm vào đây
+        
         $('#ancrLogout').click(function () {
             $('#logout_form').submit();
         });

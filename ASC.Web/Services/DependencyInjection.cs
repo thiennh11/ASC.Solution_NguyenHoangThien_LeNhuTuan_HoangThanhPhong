@@ -24,6 +24,11 @@ namespace ASC.Web.Services
             // Add Options and get data from appsettings.json with "AppSettings"
             services.AddOptions();
             services.Configure<ApplicationSettings>(config.GetSection("AppSettings"));
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = config.GetSection("CacheSettings:CacheConnectionString").Value;
+                options.InstanceName = config.GetSection("CacheSettings:CacheInstance").Value;
+            });
 
             return services;
         }
@@ -36,9 +41,12 @@ namespace ASC.Web.Services
 
             //Add MasterDataOperations
             services.AddScoped<IMasterDataOperations, MasterDataOperations>();
+            services.AddScoped<IMasterDataCacheOperations, MasterDataCacheOperations>();
+            services.AddScoped<IServiceRequestOperations, ServiceRequestOperations>();
             services.AddAutoMapper(
                 typeof(ApplicationDbContext),
-                typeof(ASC.Web.Areas.Configuration.Models.MappingProfile)
+                typeof(ASC.Web.Areas.Configuration.Models.MappingProfile),
+                typeof(ASC.Web.Areas.ServiceRequests.Models.ServiceRequestMappingProfile)
             );
 
 
@@ -59,7 +67,7 @@ namespace ASC.Web.Services
             // Add Cache, Session
             services.AddSession();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddDistributedMemoryCache();
+            //services.AddDistributedMemoryCache();
             services.AddScoped<INavigationCacheOperations, NavigationCacheOperations>();
 
             // Add RazorPages, MVC

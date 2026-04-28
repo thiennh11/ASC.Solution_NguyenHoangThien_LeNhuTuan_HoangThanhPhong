@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -56,5 +57,15 @@ public class Repository<T> : IRepository<T> where T : BaseEntity, new()
     {
         var result = dbContext.Set<T>().ToListAsync().Result;
         return result as IEnumerable<T>;
+    }
+    public async Task<IEnumerable<T>> FindAllByQuery(Expression<Func<T, bool>> filter)
+    {
+        var result = dbContext.Set<T>().Where(filter).ToListAsync().Result;
+        return result as IEnumerable<T>;
+    }
+
+    public async Task<IEnumerable<T>> FindAllInAuditByQuery(Expression<Func<T, bool>> filter)
+    {
+        throw new NotImplementedException();
     }
 }
