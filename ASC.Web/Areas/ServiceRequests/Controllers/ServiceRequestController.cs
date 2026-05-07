@@ -6,6 +6,7 @@ using ASC.Web.Areas.ServiceRequests.Models;
 using ASC.Web.Controllers;
 using ASC.Web.Data;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ASC.Web.Areas.ServiceRequests.Controllers
@@ -57,9 +58,36 @@ namespace ASC.Web.Areas.ServiceRequests.Controllers
             serviceRequest.Status = Status.New.ToString();
             serviceRequest.CreatedBy = HttpContext.User.GetCurrentUserDetails().Email;
             serviceRequest.UpdatedBy = HttpContext.User.GetCurrentUserDetails().Email;
-            serviceRequest.ServiceEngineer = "huutvtdmu@gmail.com";
+            serviceRequest.ServiceEngineer = " ";
             await _serviceRequestOperations.CreateServiceRequestAsync(serviceRequest);
             return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequests" });
+        }
+        public class AdminController : Controller
+        {
+            private readonly UserManager<IdentityUser> _userManager;
+
+            public AdminController(UserManager<IdentityUser> userManager)
+            {
+                _userManager = userManager;
+            }
+
+            public async Task<IActionResult> DeleteEngineersExceptOne()
+            {
+                var users = _userManager.Users.ToList();
+
+                foreach (var user in users)
+                {
+                    if (await _userManager.IsInRoleAsync(user, "Engineer"))
+                    {
+                        if (user.Email != "huutvtdmu@gmail.com")
+                        {
+                            await _userManager.DeleteAsync(user);
+                        }
+                    }
+                }
+
+                return Content("Deleted engineers");
+            }
         }
     }
 }
